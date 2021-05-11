@@ -4,12 +4,14 @@ from rest_framework import generics, status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from users.models import User, Friendship
-from users.serializers import UserDetailSerializer, UserSetFriendSerializer, UsersListSerializer
+from users.serializers import UserDetailSerializer, UsersListSerializer, \
+    UserFriendRequestSerializer
+
 
 @api_view(['GET'])
 def user_list(request):
     all_users = User.objects.all()
-    serializer = UserDetailSerializer(all_users, many=True)
+    serializer = UsersListSerializer(all_users, many=True)
 
     return Response(serializer.data)
 
@@ -28,7 +30,7 @@ def friend_request(request, user_id):
     another_user = User.objects.filter(id=user_id).first()
     auth_user.friends.add(another_user)
 
-    serializer = UserDetailSerializer(another_user)
+    serializer = UserFriendRequestSerializer(another_user)
 
     return Response(serializer.data)
 
@@ -44,7 +46,7 @@ def friend_accept(request, user_id):
         from_user=from_user.id).first()
 
     if not to_friend_info:
-        raise Exception("Нет такого друга пока что!")
+        raise Exception("Friend does not exist yet!")
 
     from_friend_info = Friendship.objects.filter(
         to_user=from_user.id,
@@ -64,11 +66,12 @@ def friends(request):
     # Нужен запрос на получение друзей только тех,
     # у кого подтвержденный статус дружбы
 
-    user = request.user
     # user_friends = User.objects.filter(id=user.id).friends.filter(accepted_status=True).all()
     # user_friends = User.objects.filter(
     #     friendship__accepted_status=True,
     # ).all()
+
+    user = request.user
 
     serializer = UsersListSerializer(user.friends, many=True)
     return Response(serializer.data)
