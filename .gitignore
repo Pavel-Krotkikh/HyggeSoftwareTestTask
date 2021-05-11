@@ -83,7 +83,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
-/db.sqlite3
+/*.sqlite3
 
 # mkdocs documentation
 /site
