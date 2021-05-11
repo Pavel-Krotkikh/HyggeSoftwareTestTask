@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from users.models import User, Friendship
 from users.serializers import UserDetailSerializer, UsersListSerializer, \
     UserFriendRequestSerializer
+from users.utils import friend_accept_util
 
 
 @api_view(['GET'])
@@ -38,25 +39,10 @@ def friend_request(request, user_id):
 @api_view(['POST'])
 def friend_accept(request, user_id):
     to_user_id = user_id
+    from_user = request.user
     status_to_change = request.data['status']
 
-    from_user = request.user
-    to_friend_info = Friendship.objects.filter(
-        to_user=to_user_id,
-        from_user=from_user.id).first()
-
-    if not to_friend_info:
-        raise Exception("Friend does not exist yet!")
-
-    from_friend_info = Friendship.objects.filter(
-        to_user=from_user.id,
-        from_user=to_user_id).first()
-
-    to_friend_info.accepted_status = status_to_change
-    to_friend_info.save()
-
-    from_friend_info.accepted_status = status_to_change
-    from_friend_info.save()
+    friend_accept_util(from_user, to_user_id, status_to_change)
 
     return Response(True)
 
