@@ -49,13 +49,6 @@ def friend_accept(request, user_id):
 
 @api_view(['GET'])
 def friends(request):
-    # Нужен запрос на получение друзей только тех,
-    # у кого подтвержденный статус дружбы
-
-    # user_friends = User.objects.filter(id=user.id).friends.filter(accepted_status=True).all()
-    # user_friends = User.objects.filter(
-    #     friendship__accepted_status=True,
-    # ).all()
 
     user = request.user
 
