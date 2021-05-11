@@ -3,7 +3,7 @@ from django.shortcuts import render, get_object_or_404
 from rest_framework import generics, status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from users.models import User, FriendshipInfo
+from users.models import User, Friendship
 from users.serializers import UserDetailSerializer, UserSetFriendSerializer, UsersListSerializer
 
 
@@ -60,7 +60,9 @@ def friend_request(request, user_id):
     another_user = User.objects.filter(id=user_id).first()
     auth_user.friends.add(another_user)
 
-    return Response(True)
+    serializer = UserDetailSerializer(another_user)
+
+    return Response(serializer.data)
 
 
 @api_view(['POST'])
@@ -69,14 +71,14 @@ def friend_accept(request, user_id):
     status_to_change = request.data['status']
 
     from_user = request.user
-    to_friend_info = FriendshipInfo.objects.filter(
+    to_friend_info = Friendship.objects.filter(
         to_user=to_user_id,
         from_user=from_user.id).first()
 
     if not to_friend_info:
         raise Exception("Нет такого друга пока что!")
 
-    from_friend_info = FriendshipInfo.objects.filter(
+    from_friend_info = Friendship.objects.filter(
         to_user=from_user.id,
         from_user=to_user_id).first()
 
@@ -95,11 +97,11 @@ def friends(request):
     # у кого подтвержденный статус дружбы
 
     user = request.user
-    #user_friends = User.objects.filter(id=user.id).friends.filter(accepted_status=True).all()
-    user_friends = User.objects.filter(
-        friendshipinfo__accepted_status=True,
+    # user_friends = User.objects.filter(id=user.id).friends.filter(accepted_status=True).all()
+    # user_friends = User.objects.filter(
+    #     friendship__accepted_status=True,
+    #
+    # ).all()
 
-    ).all()
-
-    serializer = UsersListSerializer(user_friends, many=True)
+    serializer = UsersListSerializer(user.friends, many=True)
     return Response(serializer.data)
