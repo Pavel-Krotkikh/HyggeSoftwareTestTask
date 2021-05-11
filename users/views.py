@@ -6,38 +6,6 @@ from rest_framework.response import Response
 from users.models import User, Friendship
 from users.serializers import UserDetailSerializer, UserSetFriendSerializer, UsersListSerializer
 
-
-@api_view(['POST'])
-def user_register(request):
-    serializer = UserDetailSerializer(data=request.data)
-    if not serializer.is_valid():
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    User.objects.create_user(request.data['username'],
-                            request.data['email'],
-                            request.data['password'])
-
-    return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-
-@api_view(['POST'])
-def user_auth(request):
-    serializer = UserDetailSerializer(data=request.data)
-
-    user = authenticate(
-        username=serializer.data['username'],
-        password=serializer.data['password'],
-    )
-
-    return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-@api_view(['POST'])
-def user_logout(request):
-    logout(request.user)
-    return True
-
-
 @api_view(['GET'])
 def user_list(request):
     all_users = User.objects.all()
@@ -47,7 +15,7 @@ def user_list(request):
 
 
 @api_view(['GET'])
-def user_detail(request):
+def user_me(request):
     user = request.user
     serializer = UserDetailSerializer(user)
 
@@ -100,7 +68,6 @@ def friends(request):
     # user_friends = User.objects.filter(id=user.id).friends.filter(accepted_status=True).all()
     # user_friends = User.objects.filter(
     #     friendship__accepted_status=True,
-    #
     # ).all()
 
     serializer = UsersListSerializer(user.friends, many=True)
